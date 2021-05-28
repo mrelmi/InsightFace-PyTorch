@@ -76,8 +76,11 @@ def train_net(args):
     scheduler = MultiStepLR(optimizer, milestones=[8, 16, 24, 32], gamma=0.1)
 
     # Epochs
+    lr = optimizer.param_groups[0]['lr']
     for epoch in range(start_epoch, args.end_epoch):
-        lr = optimizer.param_groups[0]['lr']
+        best_loss = 100
+        if epochs_since_improvement == 3 : 
+          lr /= 5
         logger.info('\nCurrent effective learning rate: {}\n'.format(lr))
         # print('Step num: {}\n'.format(optimizer.step_num))
         writer.add_scalar('model/learning_rate', lr, epoch)
@@ -94,14 +97,14 @@ def train_net(args):
         writer.add_scalar('model/train_accuracy', train_top1_accs, epoch)
 
         # One epoch's validation
-        megaface_acc = megaface_test(model)
-        writer.add_scalar('model/megaface_accuracy', megaface_acc, epoch)
+        # megaface_acc = megaface_test(model)
+        # writer.add_scalar('model/megaface_accuracy', megaface_acc, epoch)
 
         scheduler.step(epoch)
 
         # Check if there was an improvement
-        is_best = megaface_acc > best_acc
-        best_acc = max(megaface_acc, best_acc)
+        is_best = train_loss <= best_loss
+        best_loss = min(train_loss, best_loss)
         if not is_best:
             epochs_since_improvement += 1
             logger.info("\nEpochs since last improvement: %d\n" % (epochs_since_improvement,))
@@ -109,7 +112,7 @@ def train_net(args):
             epochs_since_improvement = 0
 
         # Save checkpoint
-        save_checkpoint(epoch, epochs_since_improvement, model, metric_fc, optimizer, best_acc, is_best, scheduler)
+        save_checkpoint(epoch, epochs_since_improvement, model, metric_fc, optimizer, best_loss, is_best, scheduler)
 
 
 def train(train_loader, model, metric_fc, criterion, optimizer, epoch):

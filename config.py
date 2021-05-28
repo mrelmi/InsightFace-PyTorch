@@ -25,7 +25,7 @@ DATA_DIR = 'data'
 faces_ms1m_folder = 'data/faces_emore'
 path_imgidx = os.path.join(faces_ms1m_folder, 'train.idx')
 path_imgrec = os.path.join(faces_ms1m_folder, 'train.rec')
-IMG_DIR = 'data/images'
+IMG_DIR = 'casia_webface_112x112'
 pickle_file = 'data/faces_ms1m_112x112.pickle'
 
 
